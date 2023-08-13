@@ -1,12 +1,11 @@
-import {React, useState} from 'react';
+import {React, useState, useEffect} from 'react';
 import {useQuery} from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import UserAvatar from './UserAvatar';
-import User from './User';
 
 
 const GET_USERS = gql`
-    {
+   {
     users {
       id
       name
@@ -16,17 +15,13 @@ const GET_USERS = gql`
   }
 `;
 
-function Users() {
-  const [renderUser, setRenderUser] = useState(false);
-  const [user, setUser] = useState(null);
+function Users(props) {
+  const [users, setUsers] = useState([]);
   const {loading, error, data} = useQuery(GET_USERS);
 
-  const selectUser = (user) => {
-    if (user){
-      setRenderUser(true)
-      setUser(user)
-    }
-  }
+  useEffect(() => {
+    if (data) setUsers(data.users)
+  }, [data])
   
   if (loading) return 'Loading...';
   if (error) return `Error ${error.message}`;
@@ -34,13 +29,12 @@ function Users() {
   return(
     <div className='flex flex-wrap items-center pb-16'>
       {
-        data.users.map(user => (
-          <div key={user.id} className="lg:w-1/3 w-full p-4 text-center inline" onClick={() => selectUser(user)}>
+        users.map(user => (
+          <div key={user.id} className="lg:w-1/3 w-full p-4 text-center inline" onClick={() => props.onClick(user)} >
             <UserAvatar user={user} />
           </div>
         ))
       }
-      { renderUser && <User user={user} /> }
     </div>
   )
 }
